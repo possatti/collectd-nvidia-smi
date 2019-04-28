@@ -113,7 +113,7 @@ def cb_config(config):
 	info('type_list: {}'.format(','.join(_CONFIG['type_list'])))
 	info('queries that need conversion: {}'.format(','.join(list(_CONFIG['converters_dict']))))
 
-def nvidia_smi_query_gpu(bin, query_list, converters_dict, id_query='pci.bus', id_converter='hex_to_dec'):
+def nvidia_smi_query_gpu(bin_path, query_list, converters_dict, id_query='pci.bus', id_converter='hex_to_dec'):
 	"""Use `nvidia-smi --query-gpu` to query devices.
 
 	Arguments:
@@ -125,12 +125,19 @@ def nvidia_smi_query_gpu(bin, query_list, converters_dict, id_query='pci.bus', i
 	"""
 
 	query_string = '--query-gpu={},'.format(id_query) + ','.join(query_list)
-	cmd_list = [_CONFIG['bin'], query_string, '--format=csv,noheader,nounits']
+	cmd_list = [bin_path, query_string, '--format=csv,noheader,nounits']
 	process = Popen(cmd_list, stdout=PIPE)
 	output, err = process.communicate()
-	# has_terminated = process.poll()
-	exit_code = process.wait()
-	# TODO: Maybe raise an exception if the command fails? I think it is a good idea.
+
+	assert process.returncode==0, '{} exited with error code "{}"'.format(bin_path, process.returncode)
+
+	# I don't know why, the return code doesn't seem to be enough to check if it
+	# worked, so we have to check the output too. It should always start with a
+	# `0` because of `pci.bus`. But that may not be the case when we use another
+	# query as id.
+	# FIXME: A better and more generic way to check the output might be to check
+	#        if `values` from the `split` has all the queries.
+	assert output.startswith('0'), 'The output from {} does not seem right'.format(bin_path)
 
 	result = {}
 	for line in output.decode().strip().split('\n'):

@@ -20,7 +20,7 @@ LoadPlugin python
     ModulePath "/opt/collectd/python" # Where you put the python file.
     Import "nvsmi"                    # The name of the script.
     <Module nvsmi>
-    	Bin "/usr/bin/nvidia-smi"     # Optional. In case 'nvidia-smi' is not on your 'PATH'.
+        Bin "/usr/bin/nvidia-smi"     # Optional. In case 'nvidia-smi' is not on your 'PATH'.
         QueryGPU "utilization.gpu"    # Your queries.
         QueryGPU "utilization.memory"
     </Module>
