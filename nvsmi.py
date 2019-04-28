@@ -12,7 +12,7 @@ import re
 _CONFIG = {
 	'bin': 'nvidia-smi',
 	'query_list': [],
-	'converters': [],
+	'converters_dict': {},
 	'type_list': [],
 }
 
@@ -28,6 +28,7 @@ _PLUGIN_NAME = 'nvsmi'
 # Even though it's talking about the `--id` option. I don't think I should rely
 # on the ordering from the output. Using `pci.bus` should be more realiable.
 
+# All converters should return a string.
 CONVERTERS = {
 	'hex_to_dec': lambda x: str(int(x, 16)),
 	'pstate': lambda x: re.match(r'P(\d+)', x).group(1),
@@ -38,19 +39,19 @@ CONVERTERS = {
 	# "Active" or "Not Active"
 	'active': lambda x: '1' if x.lower()=='active' else '0',
 
-	# FIXME: Wish I'd come with something more clever than this.
+	# This is a little ugly. Not sure if there is any legit use for this.
 	'identity': lambda x: x,
 }
-# TODO: Check if more need to be added.
+
 QUERY_CONVERTERS = {
 	'pci.bus': CONVERTERS['hex_to_dec'],
 	'pci.device': CONVERTERS['hex_to_dec'],
 	'pci.device_id': CONVERTERS['hex_to_dec'],
 	'pci.domain': CONVERTERS['hex_to_dec'],
 	'pci.sub_device_id': CONVERTERS['hex_to_dec'],
-
 	'clocks_throttle_reasons.supported': CONVERTERS['hex_to_dec'],
 	'clocks_throttle_reasons.active': CONVERTERS['hex_to_dec'],
+
 	'clocks_throttle_reasons.gpu_idle': CONVERTERS['active'],
 	'clocks_throttle_reasons.applications_clocks_setting': CONVERTERS['active'],
 	'clocks_throttle_reasons.sw_power_cap': CONVERTERS['active'],
@@ -68,6 +69,7 @@ QUERY_CONVERTERS = {
 
 	'pstate': CONVERTERS['pstate'],
 }
+
 # Assume type 'gauge' as default, but use other specific types when fit.
 # I would like to only use types that are default on '/usr/share/collectd/types.db'
 # to keep things simple.
@@ -99,44 +101,54 @@ def cb_config(config):
 		else:
 			info('collectd_nvidia_smi: Unknown config key "{}". Ignoring.'.format(node.key))
 
-	_CONFIG['converters'] = [ QUERY_CONVERTERS[q] if q in QUERY_CONVERTERS else CONVERTERS['identity'] for q in _CONFIG['query_list'] ]
+	# Previously, a list of converters was used. With one converter for each
+	# query, necessarily. Since most values don't need a converter, I think a
+	# dictionary is better.
+
 	_CONFIG['type_list'] = [ QUERY_TYPES[q] if q in QUERY_TYPES else 'gauge' for q in _CONFIG['query_list'] ]
+	_CONFIG['converters_dict'] = { q: QUERY_CONVERTERS[q] for q in _CONFIG['query_list'] if q in QUERY_CONVERTERS }
 
 	info('bin: {}'.format(_CONFIG['bin']))
 	info('query_list: {}'.format(','.join(_CONFIG['query_list'])))
 	info('type_list: {}'.format(','.join(_CONFIG['type_list'])))
+	info('queries that need conversion: {}'.format(','.join(list(_CONFIG['converters_dict']))))
 
-# TODO: Instead of a list of converters, a dict of (query_name, converter). A subset of QUERY_CONVERTERS.
-def nvidia_smi_query_gpu(bin, query_list, converters, id_query='pci.bus', id_converter='hex_to_dec'):
+def nvidia_smi_query_gpu(bin, query_list, converters_dict, id_query='pci.bus', id_converter='hex_to_dec'):
 	"""Use `nvidia-smi --query-gpu` to query devices.
 
 	Arguments:
-		bin: nvidia-smi binary file.
-		query_list: list of queries.
-		converters: list of converters, one converter for each query.
-		id_query: query that will identify which GPU it is.
-		id_converter: function used to convert the result from `id_query`. May be `None`.
+		bin: Path to `nvidia-smi`.
+		query_list: List of queries.
+		converters_dict: Dictionary with list of converters, one converter for each query.
+		id_query: Query that will identify which GPU it is.
+		id_converter: Function used to convert the result from `id_query`. May be `None`.
 	"""
 
-	assert len(query_list) == len(converters), '`query_list` and `converters` should have the same length'
 	query_string = '--query-gpu={},'.format(id_query) + ','.join(query_list)
 	cmd_list = [_CONFIG['bin'], query_string, '--format=csv,noheader,nounits']
 	process = Popen(cmd_list, stdout=PIPE)
 	output, err = process.communicate()
 	# has_terminated = process.poll()
 	exit_code = process.wait()
+	# TODO: Maybe raise an exception if the command fails? I think it is a good idea.
 
 	result = {}
 	for line in output.decode().strip().split('\n'):
 		values = re.split(r'\s*,\s*', line)
+
+		# Grab GPU ID.
 		gpu_id = values.pop(0)
 		if id_converter is not None:
 			gpu_id = CONVERTERS[id_converter](gpu_id)
-		converted_values = map(lambda x: x[1] if x[0] is None else x[0](x[1]), zip(converters, values))
-		if type(converted_values) is not list:
-			converted_values = list(converted_values)
+
+		# Convert whatever needs to be converted.
+		for query in converters_dict:
+			converter_func = converters_dict[query]
+			idx = query_list.index(query)
+			values[idx] = converter_func(values[idx])
+
 		result[gpu_id] = {
-			'values': converted_values,
+			'values': values,
 		}
 
 	return result
@@ -146,7 +158,7 @@ def cb_read(data=None):
 		print('Nothing to query with.', file=sys.stderr)
 		return
 
-	readings = nvidia_smi_query_gpu(_CONFIG['bin'], _CONFIG['query_list'], _CONFIG['converters'])
+	readings = nvidia_smi_query_gpu(_CONFIG['bin'], _CONFIG['query_list'], _CONFIG['converters_dict'])
 
 	vl = collectd.Values()
 	for gpu_id in readings:

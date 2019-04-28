@@ -9,7 +9,7 @@ import sys
 import os
 import re
 
-import collectd_nvidia_smi as cn
+import nvsmi
 
 def parse_args():
 	parser = argparse.ArgumentParser(description='')
@@ -22,8 +22,8 @@ def main():
 	args = parse_args()
 
 	queries = ['pci.device', 'utilization.gpu', 'utilization.memory']
-	converters = [None] * len(queries)
-	result = cn.nvidia_smi_query_gpu('nvidia-smi', queries, converters)
+	converters_dict = { q: nvsmi.QUERY_CONVERTERS[q] for q in queries if q in nvsmi.QUERY_CONVERTERS }
+	result = nvsmi.nvidia_smi_query_gpu('nvidia-smi', queries, converters_dict)
 	pprint.pprint(result)
 
 if __name__ == '__main__':

@@ -1,5 +1,9 @@
 # Fake file, just for testing a little bit of the plugin outside of collectd.
 
+from __future__ import print_function, division
+
+import sys
+
 def register_config(*args, **kwargs):
 	pass
 
