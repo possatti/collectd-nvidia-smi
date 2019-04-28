@@ -12,6 +12,7 @@ import re
 _CONFIG = {
 	'bin': 'nvidia-smi',
 	'query_list': [],
+	'new_names_list': [],
 	'converters_dict': {},
 	'type_list': [],
 }
@@ -88,8 +89,14 @@ def info(s):
 def error(s):
 	collectd.error('{}: {}'.format(_PLUGIN_NAME, s))
 
+def make_replacements(replacements, s):
+	for orig, repl in replacements:
+		s = s.replace(orig, repl)
+	return s
+
 def cb_config(config):
 	global _CONFIG
+	replacements = []
 	for node in config.children:
 		if node.key.lower() == 'bin':
 			_CONFIG['bin'] = node.values[0]
@@ -98,6 +105,12 @@ def cb_config(config):
 				collectd.error('collectd_nvidia_smi: The path ({}) provided for {} does not exist.'.format(_CONFIG['bin'], node.key))
 		elif node.key.lower() == 'querygpu':
 			_CONFIG['query_list'] += node.values
+		elif node.key.lower() == 'replacedotwith':
+			replacements.append((r'.', node.values[0]))
+		elif node.key.lower() == 'replaceunderlinewith':
+			replacements.append(('_', node.values[0]))
+		elif node.key.lower() == 'replace':
+			replacements.append((node.values[0], node.values[1]))
 		else:
 			info('collectd_nvidia_smi: Unknown config key "{}". Ignoring.'.format(node.key))
 
@@ -107,10 +120,13 @@ def cb_config(config):
 
 	_CONFIG['type_list'] = [ QUERY_TYPES[q] if q in QUERY_TYPES else 'gauge' for q in _CONFIG['query_list'] ]
 	_CONFIG['converters_dict'] = { q: QUERY_CONVERTERS[q] for q in _CONFIG['query_list'] if q in QUERY_CONVERTERS }
+	_CONFIG['new_names_list'] = [ make_replacements(replacements, q) for q in _CONFIG['query_list']]
 
 	info('bin: {}'.format(_CONFIG['bin']))
 	info('query_list: {}'.format(','.join(_CONFIG['query_list'])))
 	info('type_list: {}'.format(','.join(_CONFIG['type_list'])))
+	if len(replacements) > 0:
+		info('new names for queries: {}'.format(','.join(_CONFIG['new_names_list'])))
 	info('queries that need conversion: {}'.format(','.join(list(_CONFIG['converters_dict']))))
 
 def nvidia_smi_query_gpu(bin_path, query_list, converters_dict, id_query='pci.bus', id_converter='hex_to_dec'):
@@ -169,13 +185,12 @@ def cb_read(data=None):
 
 	vl = collectd.Values()
 	for gpu_id in readings:
-		for query, value, type_ in zip(_CONFIG['query_list'], readings[gpu_id]['values'], _CONFIG['type_list']):
-			# type_instance = 'gpu-{}.{}'.format(gpu_id, query)
+		for query_name, value, type_ in zip(_CONFIG['new_names_list'], readings[gpu_id]['values'], _CONFIG['type_list']):
 			vl.dispatch(
 				plugin=_PLUGIN_NAME,
 				plugin_instance=gpu_id,
 				type=type_,
-				type_instance=query,
+				type_instance=query_name,
 				values=[value],
 			)
 
