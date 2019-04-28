@@ -89,6 +89,10 @@ def info(s):
 def error(s):
 	collectd.error('{}: {}'.format(_PLUGIN_NAME, s))
 
+def error_exit(message, exit_code=1):
+	error(message)
+	exit(exit_code)
+
 def make_replacements(replacements, s):
 	for orig, repl in replacements:
 		s = s.replace(orig, repl)
@@ -101,8 +105,7 @@ def cb_config(config):
 		if node.key.lower() == 'bin':
 			_CONFIG['bin'] = node.values[0]
 			if not os.path.isfile(_CONFIG['bin']):
-				# FIXME: Is that how you do it? Maybe should throw an exception.
-				collectd.error('collectd_nvidia_smi: The path ({}) provided for {} does not exist.'.format(_CONFIG['bin'], node.key))
+				error_exit('The path ({}) provided for "{}" does not exist. Exiting.'.format(_CONFIG['bin'], node.key))
 		elif node.key.lower() == 'querygpu':
 			_CONFIG['query_list'] += node.values
 		elif node.key.lower() == 'replacedotwith':
@@ -145,7 +148,8 @@ def nvidia_smi_query_gpu(bin_path, query_list, converters_dict, id_query='pci.bu
 	process = Popen(cmd_list, stdout=PIPE)
 	output, err = process.communicate()
 
-	assert process.returncode==0, '{} exited with error code "{}"'.format(bin_path, process.returncode)
+	if process.returncode != 0:
+		error_exit('{} exited with error code "{}".'.format(bin_path, process.returncode))
 
 	# I don't know why, the return code doesn't seem to be enough to check if it
 	# worked, so we have to check the output too. It should always start with a
@@ -153,7 +157,8 @@ def nvidia_smi_query_gpu(bin_path, query_list, converters_dict, id_query='pci.bu
 	# query as id.
 	# FIXME: A better and more generic way to check the output might be to check
 	#        if `values` from the `split` has all the queries.
-	assert output.startswith('0'), 'The output from {} does not seem right'.format(bin_path)
+	if not output.startswith('0'):
+		error_exit('The output from {} does not seem right.'.format(bin_path))
 
 	result = {}
 	for line in output.decode().strip().split('\n'):
