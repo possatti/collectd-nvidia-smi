@@ -9,7 +9,6 @@ import sys
 import os
 import re
 
-# Default configuration.
 _CONFIG = {
 	'bin': 'nvidia-smi',
 	'query_list': [],
@@ -17,8 +16,7 @@ _CONFIG = {
 	'type_list': [],
 }
 
-# TODO: Shorten the name. I don't like 'nvidia_smi' much, it's too generic.
-_PLUGIN_NAME = 'collectd_nvidia_smi'
+_PLUGIN_NAME = 'nvsmi'
 
 # From https://developer.download.nvidia.com/compute/DCGM/docs/nvidia-smi-367.38.pdf:
 #     "It is recommended
@@ -28,27 +26,58 @@ _PLUGIN_NAME = 'collectd_nvidia_smi'
 #     on the same board."
 #
 # Even though it's talking about the `--id` option. I don't think I should rely
-# on the ordering from output. Using `pci.bus` should be more realiable.
+# on the ordering from the output. Using `pci.bus` should be more realiable.
 
 CONVERTERS = {
 	'hex_to_dec': lambda x: str(int(x, 16)),
-	'identity': lambda x: x, # Wish I'd come with something more clever than this.
+	'pstate': lambda x: re.match(r'P(\d+)', x).group(1),
+
+	# "Enabled" or "Disabled"
+	'enabled': lambda x: '1' if x.lower()=='enabled' else '0',
+
+	# "Active" or "Not Active"
+	'active': lambda x: '1' if x.lower()=='active' else '0',
+
+	# FIXME: Wish I'd come with something more clever than this.
+	'identity': lambda x: x,
 }
-# TODO: Check if it more need to be added.
+# TODO: Check if more need to be added.
 QUERY_CONVERTERS = {
-	'pci.domain': CONVERTERS['hex_to_dec'],
 	'pci.bus': CONVERTERS['hex_to_dec'],
 	'pci.device': CONVERTERS['hex_to_dec'],
 	'pci.device_id': CONVERTERS['hex_to_dec'],
+	'pci.domain': CONVERTERS['hex_to_dec'],
 	'pci.sub_device_id': CONVERTERS['hex_to_dec'],
+
+	'clocks_throttle_reasons.supported': CONVERTERS['hex_to_dec'],
+	'clocks_throttle_reasons.active': CONVERTERS['hex_to_dec'],
+	'clocks_throttle_reasons.gpu_idle': CONVERTERS['active'],
+	'clocks_throttle_reasons.applications_clocks_setting': CONVERTERS['active'],
+	'clocks_throttle_reasons.sw_power_cap': CONVERTERS['active'],
+	'clocks_throttle_reasons.hw_slowdown': CONVERTERS['active'],
+	'clocks_throttle_reasons.hw_thermal_slowdown': CONVERTERS['active'],
+	'clocks_throttle_reasons.hw_power_brake_slowdown': CONVERTERS['active'],
+	'clocks_throttle_reasons.sw_thermal_slowdown': CONVERTERS['active'],
+	'clocks_throttle_reasons.sync_boost': CONVERTERS['active'],
+
+	'accounting.mode': CONVERTERS['enabled'],
+	'display_active': CONVERTERS['enabled'],
+	'display_mode': CONVERTERS['enabled'],
+	'persistence_mode': CONVERTERS['enabled'],
+	'power.management': CONVERTERS['enabled'],
+
+	'pstate': CONVERTERS['pstate'],
 }
-# TODO: Assume type 'gauge' as default, but use other specific types when fit.
-#       I would like to only use types that are default on '/usr/share/collectd/types.db'
-#       to keep things simple.
+# Assume type 'gauge' as default, but use other specific types when fit.
+# I would like to only use types that are default on '/usr/share/collectd/types.db'
+# to keep things simple.
 QUERY_TYPES = {
 	'fan.speed': 'percent',
 	'utilization.gpu': 'percent',
 	'utilization.memory': 'percent',
+
+	'temperature.gpu': 'temperature',
+	'temperature.memory': 'temperature',
 }
 
 def info(s):

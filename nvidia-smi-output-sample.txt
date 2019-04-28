@@ -1,0 +1,202 @@
+timestamp
+2019/04/27 21:05:22.654
+driver_version
+418.56
+count
+1
+name
+GeForce GTX 1060 6GB
+serial
+[Not Supported]
+uuid
+GPU-69e4022d-9cb8-283f-8ba7-d2f87314fd84
+pci.bus_id
+00000000:01:00.0
+pci.domain
+0x0000
+pci.bus
+0x01
+pci.device
+0x00
+pci.device_id
+0x1B8310DE
+pci.sub_device_id
+0x12D910DE
+pcie.link.gen.current
+1
+pcie.link.gen.max
+3
+pcie.link.width.current
+8
+pcie.link.width.max
+16
+index
+0
+display_mode
+Enabled
+display_active
+Enabled
+persistence_mode
+Disabled
+accounting.mode
+Disabled
+accounting.buffer_size
+4000
+driver_model.current
+[Not Supported]
+driver_model.pending
+[Not Supported]
+vbios_version
+86.04.A3.00.28
+inforom.img
+G001.0000.01.04
+inforom.oem
+1.1
+inforom.ecc
+[Not Supported]
+inforom.pwr
+[Not Supported]
+gom.current
+[Not Supported]
+gom.pending
+[Not Supported]
+fan.speed [%]
+27 %
+pstate
+P8
+clocks_throttle_reasons.supported
+0x00000000000001FF
+clocks_throttle_reasons.active
+0x0000000000000001
+clocks_throttle_reasons.gpu_idle
+Active
+clocks_throttle_reasons.applications_clocks_setting
+Not Active
+clocks_throttle_reasons.sw_power_cap
+Not Active
+clocks_throttle_reasons.hw_slowdown
+Not Active
+clocks_throttle_reasons.hw_thermal_slowdown
+Not Active
+clocks_throttle_reasons.hw_power_brake_slowdown
+Not Active
+clocks_throttle_reasons.sw_thermal_slowdown
+Not Active
+clocks_throttle_reasons.sync_boost
+Not Active
+memory.total [MiB]
+6075 MiB
+memory.used [MiB]
+111 MiB
+memory.free [MiB]
+5964 MiB
+compute_mode
+Default
+utilization.gpu [%]
+0 %
+utilization.memory [%]
+3 %
+encoder.stats.sessionCount
+0
+encoder.stats.averageFps
+0
+encoder.stats.averageLatency
+0
+ecc.mode.current
+[Not Supported]
+ecc.mode.pending
+[Not Supported]
+ecc.errors.corrected.volatile.device_memory
+[Not Supported]
+ecc.errors.corrected.volatile.register_file
+[Not Supported]
+ecc.errors.corrected.volatile.l1_cache
+[Not Supported]
+ecc.errors.corrected.volatile.l2_cache
+[Not Supported]
+ecc.errors.corrected.volatile.texture_memory
+[Not Supported]
+ecc.errors.corrected.volatile.total
+[Not Supported]
+ecc.errors.corrected.aggregate.device_memory
+[Not Supported]
+ecc.errors.corrected.aggregate.register_file
+[Not Supported]
+ecc.errors.corrected.aggregate.l1_cache
+[Not Supported]
+ecc.errors.corrected.aggregate.l2_cache
+[Not Supported]
+ecc.errors.corrected.aggregate.texture_memory
+[Not Supported]
+ecc.errors.corrected.aggregate.total
+[Not Supported]
+ecc.errors.uncorrected.volatile.device_memory
+[Not Supported]
+ecc.errors.uncorrected.volatile.register_file
+[Not Supported]
+ecc.errors.uncorrected.volatile.l1_cache
+[Not Supported]
+ecc.errors.uncorrected.volatile.l2_cache
+[Not Supported]
+ecc.errors.uncorrected.volatile.texture_memory
+[Not Supported]
+ecc.errors.uncorrected.volatile.total
+[Not Supported]
+ecc.errors.uncorrected.aggregate.device_memory
+[Not Supported]
+ecc.errors.uncorrected.aggregate.register_file
+[Not Supported]
+ecc.errors.uncorrected.aggregate.l1_cache
+[Not Supported]
+ecc.errors.uncorrected.aggregate.l2_cache
+[Not Supported]
+ecc.errors.uncorrected.aggregate.texture_memory
+[Not Supported]
+ecc.errors.uncorrected.aggregate.total
+[Not Supported]
+retired_pages.single_bit_ecc.count
+[Not Supported]
+retired_pages.double_bit.count
+[Not Supported]
+retired_pages.pending
+[Not Supported]
+temperature.gpu
+36
+temperature.memory
+N/A
+power.management
+Enabled
+power.draw [W]
+7.06 W
+power.limit [W]
+120.00 W
+enforced.power.limit [W]
+120.00 W
+power.default_limit [W]
+120.00 W
+power.min_limit [W]
+60.00 W
+power.max_limit [W]
+140.00 W
+clocks.current.graphics [MHz]
+139 MHz
+clocks.current.sm [MHz]
+139 MHz
+clocks.current.memory [MHz]
+405 MHz
+clocks.current.video [MHz]
+544 MHz
+clocks.applications.graphics [MHz]
+[Not Supported]
+clocks.applications.memory [MHz]
+[Not Supported]
+clocks.default_applications.graphics [MHz]
+[Not Supported]
+clocks.default_applications.memory [MHz]
+[Not Supported]
+clocks.max.graphics [MHz]
+1923 MHz
+clocks.max.sm [MHz]
+1923 MHz
+clocks.max.memory [MHz]
+4004 MHz

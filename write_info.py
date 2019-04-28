@@ -1,3 +1,7 @@
+"""
+This is for debugging. Use with `collectd -fC <CONF>`.
+"""
+
 import collectd
 import sys
 import re
