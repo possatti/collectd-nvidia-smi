@@ -1,7 +1,7 @@
-collectd_nvidia_smi
-===================
+nvsmi
+=====
 
-Python plugin for collectd that reads metrics from `nvidia-smi --query-gpu`.
+This is a python plugin for `collectd` which reads metrics from `nvidia-smi --query-gpu`.
 
 ## Alternative
 
@@ -20,9 +20,24 @@ LoadPlugin python
     ModulePath "/opt/collectd/python" # Where you put the python file.
     Import "nvsmi"                    # The name of the script.
     <Module nvsmi>
-        Bin "/usr/bin/nvidia-smi"     # Optional. In case 'nvidia-smi' is not on your 'PATH'.
-        QueryGPU "utilization.gpu"    # Your queries.
-        QueryGPU "utilization.memory"
+        ## (Optional) In case 'nvidia-smi' is not on your 'PATH'.
+        #Bin "/usr/bin/nvidia-smi"
+
+        ## You can have any number of queries per line.
+        QueryGPU "temperature.gpu"
+        QueryGPU "power.draw" "power.limit"
+        QueryGPU "utilization.gpu" "utilization.memory"
+        QueryGPU "memory.total" "memory.used" "memory.free"
+
+        ## You can replace complicated names with simpler ones.
+        #Replace "clocks_throttle_reasons" "ctr"
+
+        ## You can replace dots and underlines from query names with whatever you want.
+        #ReplaceDotWith "|"
+        #ReplaceUnderlineWith "-"
+
+        ## WARN: Replacements are applied on the same order you provide here in
+        ##       the configuration.
     </Module>
 </Plugin>
 [...]
@@ -36,58 +51,58 @@ Also check if the queries you want to use have actually valid values for your GP
 
 Some useful queries from `nvidia-smi --help-query-gpu`:
 
-	"fan.speed"
-	The fan speed value is the percent of maximum speed that the device's fan is currently intended to run at. It ranges from 0 to 100 %. Note: The reported speed is the intended fan speed. If the fan is physically blocked and unable to spin, this output will not match the actual fan speed. Many parts do not report fan speeds because they rely on cooling via fans in the surrounding enclosure.
+    "fan.speed"
+    The fan speed value is the percent of maximum speed that the device's fan is currently intended to run at. It ranges from 0 to 100 %. Note: The reported speed is the intended fan speed. If the fan is physically blocked and unable to spin, this output will not match the actual fan speed. Many parts do not report fan speeds because they rely on cooling via fans in the surrounding enclosure.
 
-	"memory.total"
-	Total installed GPU memory.
+    "memory.total"
+    Total installed GPU memory.
 
-	"memory.used"
-	Total memory allocated by active contexts.
+    "memory.used"
+    Total memory allocated by active contexts.
 
-	"memory.free"
-	Total free memory.
+    "memory.free"
+    Total free memory.
 
-	"utilization.gpu"
-	Percent of time over the past sample period during which one or more kernels was executing on the GPU.
-	The sample period may be between 1 second and 1/6 second depending on the product.
+    "utilization.gpu"
+    Percent of time over the past sample period during which one or more kernels was executing on the GPU.
+    The sample period may be between 1 second and 1/6 second depending on the product.
 
-	"utilization.memory"
-	Percent of time over the past sample period during which global (device) memory was being read or written.
-	The sample period may be between 1 second and 1/6 second depending on the product.
+    "utilization.memory"
+    Percent of time over the past sample period during which global (device) memory was being read or written.
+    The sample period may be between 1 second and 1/6 second depending on the product.
 
-	"temperature.gpu"
-	 Core GPU temperature. in degrees C.
+    "temperature.gpu"
+     Core GPU temperature. in degrees C.
 
-	"temperature.memory"
-	 HBM memory temperature. in degrees C.
+    "temperature.memory"
+     HBM memory temperature. in degrees C.
 
-	"power.draw"
-	The last measured power draw for the entire board, in watts. Only available if power management is supported. This reading is accurate to within +/- 5 watts.
+    "power.draw"
+    The last measured power draw for the entire board, in watts. Only available if power management is supported. This reading is accurate to within +/- 5 watts.
 
-	"power.limit"
-	The software power limit in watts. Set by software like nvidia-smi. On Kepler devices Power Limit can be adjusted using [-pl | --power-limit=] switches.
+    "power.limit"
+    The software power limit in watts. Set by software like nvidia-smi. On Kepler devices Power Limit can be adjusted using [-pl | --power-limit=] switches.
 
-	"clocks.current.graphics" or "clocks.gr"
-	Current frequency of graphics (shader) clock.
+    "clocks.current.graphics" or "clocks.gr"
+    Current frequency of graphics (shader) clock.
 
-	"clocks.current.sm" or "clocks.sm"
-	Current frequency of SM (Streaming Multiprocessor) clock.
+    "clocks.current.sm" or "clocks.sm"
+    Current frequency of SM (Streaming Multiprocessor) clock.
 
-	"clocks.current.memory" or "clocks.mem"
-	Current frequency of memory clock.
+    "clocks.current.memory" or "clocks.mem"
+    Current frequency of memory clock.
 
-	"clocks.current.video" or "clocks.video"
-	Current frequency of video encoder/decoder clock.
+    "clocks.current.video" or "clocks.video"
+    Current frequency of video encoder/decoder clock.
 
-	"clocks.max.graphics" or "clocks.max.gr"
-	Maximum frequency of graphics (shader) clock.
+    "clocks.max.graphics" or "clocks.max.gr"
+    Maximum frequency of graphics (shader) clock.
 
-	"clocks.max.sm" or "clocks.max.sm"
-	Maximum frequency of SM (Streaming Multiprocessor) clock.
+    "clocks.max.sm" or "clocks.max.sm"
+    Maximum frequency of SM (Streaming Multiprocessor) clock.
 
-	"clocks.max.memory" or "clocks.max.mem"
-	Maximum frequency of memory clock.
+    "clocks.max.memory" or "clocks.max.mem"
+    Maximum frequency of memory clock.
 
 ## Converters
 
@@ -101,8 +116,7 @@ There are also some other queries that my GPU does not support, so I could not p
 
 Here is a list of what I plan to do if I actually feel like doing it:
 
- - Allow to replace `.` and `_` from queries.
- - Allow to select which ids to monitor.
+ - Allow to select which GPUs to monitor.
  - Allow different queries for each GPU. (I should pay attention to make a single `nvidia-smi` call.)
  - Perhaps include an option to use `nvidia-smi -q -x` instead. Keeping in mind that the queries will be different (different names).
 

@@ -115,7 +115,7 @@ def cb_config(config):
 		elif node.key.lower() == 'replace':
 			replacements.append((node.values[0], node.values[1]))
 		else:
-			info('collectd_nvidia_smi: Unknown config key "{}". Ignoring.'.format(node.key))
+			info('Unknown config key "{}". Ignoring.'.format(node.key))
 
 	# Previously, a list of converters was used. With one converter for each
 	# query, necessarily. Since most values don't need a converter, I think a
