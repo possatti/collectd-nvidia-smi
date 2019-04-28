@@ -43,7 +43,7 @@ LoadPlugin python
 [...]
 ```
 
-Make sure that, whatever user `collectd` is running on, it can read the `nvsmi.py` script, and that `nvidia-smi` works for that user. It may be necessary to set LD_LIBRARY_PATH properly, so that `nvidia-smi` can find NVIDIA's dynamic libraries, for example.
+Make sure that, whatever user `collectd` is running on, it can read the `nvsmi.py` script, and that `nvidia-smi` works for that user. It may be necessary to set `LD_LIBRARY_PATH` properly, so that `nvidia-smi` can find NVIDIA's dynamic libraries, for example.
 
 Also check if the queries you want to use have actually valid values for your GPUs, i.e., they are actual numbers or they have a converter for them. Read more on converters down bellow.
 
@@ -106,7 +106,7 @@ Some useful queries from `nvidia-smi --help-query-gpu`:
 
 ## Converters
 
-Some values output by `nvidia-smi` need conversion to an integer or float value. For example, `pci.bus`, and many other queries, need to be converted from base 16 to base 10. `display_mode`, and many others, are either "Enabled" or "Disabled", so they are converted to "1" or "0", respectively. Other values seem impossible to convert, like `name`, `driver_version`, `pci.bus_id`, but I don't think there is anyone trying to watch these with `collectd`, so just be aware they won't work.
+Some values output by `nvidia-smi` need conversion to an integer or float value. For example, `pci.bus`, and many other queries, need to be converted from base 16 to base 10. `display_mode`, and many others, are either `Enabled` or `Disabled`, so they are converted to `1` or `0`, respectively. Other values seem impossible to convert, like `name`, `driver_version`, `pci.bus_id`, but I don't think there is anyone trying to watch these with `collectd`, so just be aware that they won't work.
 
 There are also some other queries that my GPU does not support, so I could not prepare them adequately, because I didn't know what they looked like, and I was not in the mood for reading a bunch of docs for queries I'm not going to use. There is no restriction to which queries you can make though.
 
