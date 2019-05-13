@@ -108,6 +108,8 @@ def cb_config(config):
 				error_exit('The path ({}) provided for "{}" does not exist. Exiting.'.format(_CONFIG['bin'], node.key))
 		elif node.key.lower() == 'querygpu':
 			_CONFIG['query_list'] += node.values
+		elif node.key.lower() == 'interval':
+			_CONFIG['interval'] = node.values[0]
 		elif node.key.lower() == 'replacedotwith':
 			replacements.append((r'.', node.values[0]))
 		elif node.key.lower() == 'replaceunderlinewith':
@@ -131,6 +133,10 @@ def cb_config(config):
 	if len(replacements) > 0:
 		info('new names for queries: {}'.format(','.join(_CONFIG['new_names_list'])))
 	info('queries that need conversion: {}'.format(','.join(list(_CONFIG['converters_dict']))))
+
+	# Call `register_read` here, so that we can set the interval.
+	collectd.register_read(cb_read, _CONFIG['interval'])
+
 
 def nvidia_smi_query_gpu(bin_path, query_list, converters_dict, id_query='pci.bus', id_converter='hex_to_dec'):
 	"""Use `nvidia-smi --query-gpu` to query devices.
@@ -200,5 +206,3 @@ def cb_read(data=None):
 			)
 
 collectd.register_config(cb_config)
-collectd.register_read(cb_read)
-

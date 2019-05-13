@@ -23,6 +23,10 @@ LoadPlugin python
         ## (Optional) In case 'nvidia-smi' is not on your 'PATH'.
         #Bin "/usr/bin/nvidia-smi"
 
+        ## (Optional) Set the read interval here. It defaults to the `Interval`
+        ## of the python plugin.
+        Interval 30
+
         ## You can have any number of queries per line.
         QueryGPU "temperature.gpu"
         QueryGPU "power.draw" "power.limit"
