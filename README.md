@@ -3,9 +3,15 @@ nvsmi
 
 This is a python plugin for `collectd` which reads metrics from `nvidia-smi --query-gpu`.
 
-## Alternative
+**UPDATE: I am no longer interested in maintaining this repository, since I am now using Telegraf. You can still use this if you like it and if it works for you, but I recommend you take a look at the *Alternatives* section below.**
 
-`collectd` already has a `gpu_nvidia` plugin built-in written in C that queries NVIDIA devices using NVML. However, it pins down which metrics can be collected, while this plugin allows any metric to be queried from the `nvidia-smi` binary.
+## Alternatives
+
+`collectd` already has a `gpu_nvidia` plugin written in C that queries NVIDIA devices using NVML. However, it pins down which metrics can be collected, while my plugin allows any metric to be queried from the `nvidia-smi` binary. Also, the `gpu_nvidia` plugin doesn't seem to be bundled with `collectd` when installing it from `apt-get`.
+
+Before developing this plugin, I also used [nvidia2graphite](https://github.com/stefan-k/nvidia2graphite) for some time, which can be used to collect and send GPU usage directly to Graphite.
+
+And, my new favorite (the one I am currently using): Telegraf (instead of `collectd`) with its `nvidia_smi` plugin. It has been working pretty well for me.
 
 ## Installing and configuring
 
